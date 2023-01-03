@@ -15,7 +15,11 @@ class MainMediator {
 	}
 
 	private initChannel(channel: IpcChannel<any, any>){
-		ipcMain.on(channel.getName(), (e: IpcMainEvent, request: IpcRequest<any>) => e.sender.send(channel.getName(), channel.handle(e, request)));
+		ipcMain.on(channel.getName(), (e: IpcMainEvent, request: IpcRequest<any>) => {
+			Promise.resolve(channel.handle(e, request)).then((result: any) => {
+				e.sender.send(channel.getName(), result);
+			});
+		});
 	}
 }
 
@@ -38,5 +42,5 @@ export { mainMediator as MainMediator };
 // represents a channel where requests are sent and handled
 export interface IpcChannel<Q, S> {
 	getName(): string;
-	handle(event: IpcMainEvent, request: IpcRequest<Q>): S;
+	handle(event: IpcMainEvent, request: IpcRequest<Q>): S | Promise<S>
 }
