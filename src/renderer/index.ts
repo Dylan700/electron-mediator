@@ -14,18 +14,24 @@ export interface IpcRequest<T> {
 class RendererMediator {
 	public send<Q, S>(channel: string, request: Q): Promise<S>{
 		if(window === undefined)
-			return Promise.reject("The window object is not available. Are you using this 'send' method in the renderer process?");
+			return Promise.reject("The window object is not available. Are you using this 'send' method in the renderer process?")
 		if(window.mediator === undefined)
-			return Promise.reject("The mediator API is not available. Did you call initPreload() in the preload script?");
-		const req: IpcRequest<Q> = {params: request};
-		window.mediator[`send_${channel}`](req);
+			return Promise.reject("The mediator API is not available. Did you call initPreload() in the preload script?")
+		if(window.mediator[`send_${channel}`] == undefined || window.mediator[`receive_${channel}`] == undefined)
+			return Promise.reject("The mediator object does not contain a method for the supplied channel. Did you register the channel in initPreload()?")
+		const req: IpcRequest<Q> = {params: request} 
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		window.mediator[`send_${channel}`](req)
 		return new Promise<S>((resolve) => {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
 			window.mediator[`receive_${channel}`]((response: S) => {
-				resolve(response);
-			});
-		});
+				resolve(response)
+			})
+		})
 	}
 }
 
-const rendererMediator = new RendererMediator();
-export { rendererMediator as RendererMediator };
+const rendererMediator = new RendererMediator()
+export { rendererMediator as RendererMediator }
