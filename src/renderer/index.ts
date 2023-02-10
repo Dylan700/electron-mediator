@@ -11,6 +11,11 @@ export interface IpcRequest<T> {
 	params: T;
 }
 
+// represents a response sent from the main process
+export interface IpcResponse {
+	isRejected: boolean;
+}
+
 class RendererMediator {
 	public send<Q, S>(channel: string, request: Q): Promise<S>{
 		if(window === undefined)
@@ -23,11 +28,12 @@ class RendererMediator {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		window.mediator[`send_${channel}`](req)
-		return new Promise<S>((resolve) => {
+		return new Promise<S>((resolve, reject) => {
 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
-			window.mediator[`receive_${channel}`]((response: S) => {
-				resolve(response)
+			window.mediator[`receive_${channel}`]((response: IpcResponse) => {
+				// check if the response is rejected or resolved from main
+				!response.isRejected ? resolve(response as unknown as S | Promise<S>) : reject(response)
 			})
 		})
 	}

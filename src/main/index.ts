@@ -17,8 +17,8 @@ class MainMediator {
 	private initChannel(channel: IpcChannel<any, any>){
 		ipcMain.on(channel.getName(), (e: IpcMainEvent, request: IpcRequest<any>) => {
 			Promise.resolve(channel.handle(e, request)).then((result: any) => {
-				e.sender.send(channel.getName(), result)
-			})
+				e.sender.send(channel.getName(), {isRejected: false, ...result})
+			}).catch(error => e.sender.send(channel.getName(), {isRejected: true, error}))
 		})
 	}
 }
