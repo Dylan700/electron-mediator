@@ -5,7 +5,7 @@
   "main": "renderer/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Dylan700/electron-mediator.git"
+    "url": "git+https://github.com/Dylan700/electron-mediator.git"
   },
   "scripts": {
     "build": "tsc && cp -R ./dist/main ./main && cp -R ./dist/renderer ./renderer",
